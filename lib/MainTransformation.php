@@ -53,7 +53,7 @@ class MainTransformation implements Transformation
             // it's ok, we might still be able to transform it…
         }
 
-        if (is_iterable($data)) {
+        if (is_array($data) || $data instanceof \Traversable) {
             $array = [];
 
             foreach ($data as $item) {
