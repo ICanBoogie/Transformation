@@ -63,29 +63,7 @@ class TransformationPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        $transformers = $container->findTaggedServiceIds($this->tag, true);
-        $typeProperty = $this->typeProperty;
-        $mapping = [];
-        $refMap = [];
-
-        foreach ($transformers as $id => $tags) {
-            if (empty($tags[0][$typeProperty])) {
-                throw new InvalidArgumentException(
-                    "The `$typeProperty` property is required for service `$id`."
-                );
-            }
-
-            $type = $tags[0][$typeProperty];
-
-            if (isset($mapping[$type])) {
-                throw new LogicException(
-                    "The type `$type` already has a transformation: `{$mapping[$type]}`."
-                );
-            }
-
-            $mapping[$type] = $id;
-            $refMap[$id] = new TypedReference($id, $container->getDefinition($id)->getClass());
-        }
+        list($mapping, $refMap) = $this->buildMappingAndRefMap($container);
 
         $container
             ->register($this->serviceId, TransformationProvider::class)
@@ -93,5 +71,58 @@ class TransformationPass implements CompilerPassInterface
                 $mapping,
                 ServiceLocatorTagPass::register($container, $refMap),
             ]);
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     *
+     * @return array
+     */
+    private function buildMappingAndRefMap(ContainerBuilder $container): array
+    {
+        $transformers = $container->findTaggedServiceIds($this->tag, true);
+        $mapping = [];
+        $refMap = [];
+
+        foreach ($transformers as $id => $tags) {
+            $type = $this->resolveType($tags, $id);
+            $this->assertTypeNotDefined($type, $mapping);
+            $mapping[$type] = $id;
+            $refMap[$id] = new TypedReference($id, $container->getDefinition($id)->getClass());
+        }
+
+        return [ $mapping, $refMap ];
+    }
+
+    /**
+     * @param array $tags
+     * @param string $id
+     *
+     * @return string
+     */
+    private function resolveType(array $tags, string $id): string
+    {
+        $typeProperty = $this->typeProperty;
+
+        if (empty($tags[0][$typeProperty])) {
+            throw new InvalidArgumentException(
+                "The `$typeProperty` property is required for service `$id`."
+            );
+        }
+
+        return $tags[0][$typeProperty];
+    }
+
+    /**
+     * @param string $type
+     * @param array $mapping
+     */
+    private function assertTypeNotDefined(string $type, array $mapping)
+    {
+        if (isset($mapping[$type])) {
+            throw new LogicException(
+                "The type `$type` already has a transformation: `{$mapping[$type]}`."
+            );
+        }
     }
 }

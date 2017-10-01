@@ -53,16 +53,27 @@ class MainTransformation implements Transformation
             // it's ok, we might still be able to transform it…
         }
 
-        if (is_array($data) || $data instanceof \Traversable) {
-            $array = [];
-
-            foreach ($data as $item) {
-                $array[] = $this($item, $transformation);
-            }
-
-            return $array;
+        if (!is_array($data) && !$data instanceof \Traversable) {
+            throw new TransformationNotFound($data, null, $e);
         }
 
-        throw new TransformationNotFound($data, null, $e);
+        return $this->transformIterable($data, $transformation);
+    }
+
+    /**
+     * @param \Traversable|array $data
+     * @param callable $transformation
+     *
+     * @return array
+     */
+    private function transformIterable($data, callable $transformation): array
+    {
+        $array = [];
+
+        foreach ($data as $item) {
+            $array[] = $this($item, $transformation);
+        }
+
+        return $array;
     }
 }
