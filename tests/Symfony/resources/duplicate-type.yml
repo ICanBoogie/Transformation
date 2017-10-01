@@ -1,0 +1,11 @@
+services:
+
+  ICanBoogie\Transformation\TestCases\DataSample1Transformation:
+    tags:
+      - name: transformation
+        type: ICanBoogie\Transformation\TestCases\DataSample1
+
+  ICanBoogie\Transformation\TestCases\DataSample2Transformation:
+    tags:
+      - name: transformation
+        type: ICanBoogie\Transformation\TestCases\DataSample1 # duplicate type

@@ -1,0 +1,6 @@
+services:
+
+  ICanBoogie\Transformation\TestCases\DataSample1Transformation:
+    tags:
+      - name: transformation
+        custom-type: ICanBoogie\Transformation\TestCases\DataSample1
