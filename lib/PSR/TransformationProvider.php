@@ -25,6 +25,11 @@ class TransformationProvider extends TransformationProviderAbstract
     private $container;
 
     /**
+     * @var array
+     */
+    private $cache = [];
+
+    /**
      * @inheritdoc
      * @param ContainerInterface $container
      */
@@ -40,6 +45,8 @@ class TransformationProvider extends TransformationProviderAbstract
      */
     protected function resolve($transformation): callable
     {
-        return $this->container->get($transformation);
+        $resolved = &$this->cache[$transformation];
+
+        return $resolved ?: $resolved = $this->container->get($transformation);
     }
 }

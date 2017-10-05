@@ -35,9 +35,11 @@ class TransformationProviderTest extends TestCase
 
         ], $this->mockContainer(function (Envision $container) use ($transformationId, $transformation) {
             $container('get', $transformationId)
-                ->shouldBeCalled()->willReturn($transformation);
+                ->shouldBeCalledTimes(1)->willReturn($transformation);
         }));
 
+        $this->assertSame($transformation, $provider(new DataSample1));
+        # The transformation should be cached
         $this->assertSame($transformation, $provider(new DataSample1));
     }
 

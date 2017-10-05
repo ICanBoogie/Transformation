@@ -85,6 +85,23 @@ class MainTransformationTest extends TestCase
         ];
     }
 
+    public function shouldCacheTransformations()
+    {
+        $invokedCount = 0;
+        $data = new DataSample1();
+
+        $transformation = new MainTransformation(function ($data) use (&$invokedCount) {
+            return uniqid();
+        });
+
+        $transformation($data);
+        $transformation($data);
+        $transformation($data);
+        $transformation($data);
+
+        $this->assertEquals(1, $invokedCount);
+    }
+
     /**
      * @test
      * @dataProvider provideTransformData
@@ -121,7 +138,7 @@ class MainTransformationTest extends TestCase
      * @param mixed $data
      * @param mixed $expected
      */
-    public function ShouldCallTransformationWithSpecifiedTransformer($data, $expected)
+    public function shouldCallTransformationWithSpecifiedTransformer($data, $expected)
     {
         $dataTransformation = function ($data, callable $actualTransformation) use (&$transformation) {
             $this->assertSame($transformation, $actualTransformation);

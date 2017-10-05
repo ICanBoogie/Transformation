@@ -25,6 +25,11 @@ class MainTransformation implements Transformation
     private $transformationProvider;
 
     /**
+     * @var Transformation[]
+     */
+    private $cache = [];
+
+    /**
      * @param TransformationProvider|callable $transformationProvider
      */
     public function __construct(callable $transformationProvider)
@@ -47,17 +52,32 @@ class MainTransformation implements Transformation
 
         $transformation = $transformation ?: $this;
 
-        try {
-            return ($this->transformationProvider)($data)($data, $transformation);
-        } catch (TransformationNotFound $e) {
-            // it's ok, we might still be able to transform it…
-        }
+        if (is_object($data)) {
+            try {
+                return $this->resolveTransformation($data)($data, $transformation);
+            } catch (TransformationNotFound $e) {
+                if (!$data instanceof \Traversable) {
+                    throw $e;
+                }
 
-        if (!is_array($data) && !$data instanceof \Traversable) {
-            throw new TransformationNotFound($data, null, $e);
+                // The Traversable does not have a transformation, let's iterate over it.
+            }
         }
 
         return $this->transformIterable($data, $transformation);
+    }
+
+    /**
+     * @param mixed $data
+     *
+     * @return callable
+     */
+    private function resolveTransformation($data): callable
+    {
+        $class = get_class($data);
+        $transformation = &$this->cache[$class];
+
+        return $transformation ?: $transformation = ($this->transformationProvider)($data);
     }
 
     /**
