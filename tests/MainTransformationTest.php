@@ -160,7 +160,9 @@ class MainTransformationTest extends TestCase
     public function provideTransformData()
     {
         return [
-
+            [ ['abc' => 1], [1] ],
+            [ (object) [ 'abc' => 1 ], [ 'abc' => 1 ] ],
+            [ (object) [ 'abc' => new DataSample1 ], [ 'abc' => DataSample1::class ] ],
             [ new DataSample1, DataSample1::class ],
             [ [ new DataSample1, new DataSample2 ], [ DataSample1::class, DataSample2::class ] ],
             [ new \ArrayIterator([ new DataSample1, new DataSample2 ]), [ DataSample1::class, DataSample2::class ] ],

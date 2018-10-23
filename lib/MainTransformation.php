@@ -52,7 +52,7 @@ class MainTransformation implements Transformation
 
         $transformation = $transformation ?: $this;
 
-        if (is_object($data)) {
+        if (is_object($data) && !$data instanceof \stdClass) {
             try {
                 return $this->resolveTransformation($data)($data, $transformation);
             } catch (TransformationNotFound $e) {
@@ -90,8 +90,14 @@ class MainTransformation implements Transformation
     {
         $array = [];
 
-        foreach ($data as $item) {
-            $array[] = $this($item, $transformation);
+        if ($data instanceof \stdClass) {
+            foreach ($data as $key => $item) {
+                $array[$key] = $this($item, $transformation);
+            }
+        } else {
+            foreach ($data as $item) {
+                $array[] = $this($item, $transformation);
+            }
         }
 
         return $array;
