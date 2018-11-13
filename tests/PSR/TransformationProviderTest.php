@@ -12,15 +12,11 @@
 namespace ICanBoogie\Transformation\PSR;
 
 use ICanBoogie\Transformation\TestCases\DataSample1;
-use olvlvl\Envision;
-use olvlvl\EnvisionHelper;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
 class TransformationProviderTest extends TestCase
 {
-    use EnvisionHelper;
-
     /**
      * @test
      */
@@ -33,8 +29,8 @@ class TransformationProviderTest extends TestCase
 
             DataSample1::class => $transformationId = uniqid()
 
-        ], $this->mockContainer(function (Envision $container) use ($transformationId, $transformation) {
-            $container('get', $transformationId)
+        ], $this->mockContainer(function ($container) use ($transformationId, $transformation) {
+            $container->get($transformationId)
                 ->shouldBeCalledTimes(1)->willReturn($transformation);
         }));
 
@@ -50,6 +46,12 @@ class TransformationProviderTest extends TestCase
      */
     private function mockContainer(callable $init = null): ContainerInterface
     {
-        return $this->envision(ContainerInterface::class, $init);
+        $container = $this->prophesize(ContainerInterface::class);
+
+        if ($init) {
+            $init($container);
+        }
+
+        return $container->reveal();
     }
 }

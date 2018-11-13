@@ -11,14 +11,10 @@
 
 namespace ICanBoogie\Transformation;
 
-use olvlvl\Envision;
-use olvlvl\EnvisionHelper;
 use PHPUnit\Framework\TestCase;
 
 class ContextualizedTransformationTest extends TestCase
 {
-    use EnvisionHelper;
-
     /**
      * @test
      */
@@ -53,10 +49,10 @@ class ContextualizedTransformationTest extends TestCase
         };
 
         $ctxTransformation = $this->makeTransformation(
-            function (Envision $context) use ($data) {
-                $context('push', $data)
+            function ($context) use ($data) {
+                $context->push($data)
                     ->shouldBeCalled();
-                $context('pop')
+                $context->pop()
                     ->shouldBeCalled();
             },
 
@@ -118,6 +114,12 @@ class ContextualizedTransformationTest extends TestCase
      */
     private function mockContext(callable $init = null): Context
     {
-        return $this->envision(Context::class, $init);
+        $context = $this->prophesize(Context::class);
+
+        if ($init) {
+            $init($context);
+        }
+
+        return $context->reveal();
     }
 }
